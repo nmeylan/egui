@@ -137,7 +137,7 @@ pub fn start_web(canvas_id: &str, app: Box<dyn epi::App>) -> Result<(), wasm_bin
 /// ```
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(feature = "egui_glium")]
-pub fn run_native(app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> ! {
+pub fn run_native(app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> () {
     egui_glium::run(app, &native_options)
 }
 
@@ -152,7 +152,7 @@ pub fn run_native(app: Box<dyn epi::App>, native_options: epi::NativeOptions) ->
 #[cfg(not(target_arch = "wasm32"))]
 #[cfg(not(feature = "egui_glium"))] // make sure we still compile with `--all-features`
 #[cfg(feature = "egui_glow")]
-pub fn run_native(app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> ! {
+pub fn run_native(app: Box<dyn epi::App>, native_options: epi::NativeOptions) -> () {
     egui_glow::run(app, &native_options)
 }
 

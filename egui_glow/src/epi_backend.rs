@@ -1,3 +1,4 @@
+use glutin::platform::run_return::EventLoopExtRunReturn;
 use crate::*;
 
 struct RequestRepaintEvent;
@@ -46,12 +47,16 @@ pub use epi::NativeOptions;
 
 /// Run an egui app
 #[allow(unsafe_code)]
-pub fn run(app: Box<dyn epi::App>, native_options: &epi::NativeOptions) -> ! {
+pub fn run(app: Box<dyn epi::App>, native_options: &epi::NativeOptions) -> () {
     let persistence = egui_winit::epi::Persistence::from_app_name(app.name());
     let window_settings = persistence.load_window_settings();
     let window_builder =
         egui_winit::epi::window_builder(native_options, &window_settings).with_title(app.name());
-    let event_loop = glutin::event_loop::EventLoop::with_user_event();
+    let mut event_loop = if cfg!(target_os = "windows") {
+        glutin::platform::windows::EventLoopExtWindows::new_any_thread()
+    } else {
+        glutin::event_loop::EventLoop::with_user_event()
+    };
     let (gl_window, gl) = create_display(window_builder, &event_loop);
 
     let repaint_signal = std::sync::Arc::new(GlowRepaintSignal(std::sync::Mutex::new(
@@ -72,7 +77,7 @@ pub fn run(app: Box<dyn epi::App>, native_options: &epi::NativeOptions) -> ! {
 
     let mut is_focused = true;
 
-    event_loop.run(move |event, _, control_flow| {
+    event_loop.run_return(move |event, _, control_flow| {
         let mut redraw = || {
             if !is_focused {
                 // On Mac, a minimized Window uses up all CPU: https://github.com/emilk/egui/issues/325
@@ -151,5 +156,5 @@ pub fn run(app: Box<dyn epi::App>, native_options: &epi::NativeOptions) -> ! {
             }
             _ => (),
         }
-    });
+    })
 }
